@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {data} from '../dummy_data.js';
 
 class App extends Component {
   constructor(props) {
@@ -9,6 +10,7 @@ class App extends Component {
   }
 
   render() {
+    console.log(data.tracks.items);
     return (
       <h1>Howdy, World!</h1>
     );
