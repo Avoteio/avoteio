@@ -21,9 +21,11 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "mysql": "^2.16.0",
     "path": "^0.12.7",
     "react": "^16.5.0",
     "react-dom": "^16.5.0"

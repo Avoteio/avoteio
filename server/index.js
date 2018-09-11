@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const routes = require('./routes.js');
+const db = require('../database/index.js');
 
 const app = express();
 
@@ -19,3 +20,7 @@ app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });
 
+
+app.get('/', (req, res) => {
+  db.query('SELECT * ')
+})
