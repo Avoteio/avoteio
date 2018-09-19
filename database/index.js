@@ -1,12 +1,14 @@
 const mysql = require('mysql');
 
-var connection = mysql.createConnection({
-  host: 'bbj31ma8tye2kagi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-  user: 'yocqduprp1mltiz3',
-  password: process.env.DB_PASSWORD,
-  database: 'fysv1ohxudop09ay',
-  port: 3306
-});
+// var connection = mysql.createConnection({
+//   host: 'bbj31ma8tye2kagi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+//   user: 'yocqduprp1mltiz3',
+//   password: process.env.DB_PASSWORD,
+//   database: 'fysv1ohxudop09ay',
+//   port: 3306
+// });
+
+var connection = mysql.createConnection(process.env.DB_URL);
 
 const getSongInRoom = (songObj, roomId) => {
   connection.query('SELECT * FROM songs s INNER JOIN songs_rooms sr ON s.id = sr.song_id AND sr.room_id = ? AND s.id = (SELECT id FROM songs WHERE spotify_id = ?)', [roomId, songObj.id], (err, results) => {
@@ -118,7 +120,7 @@ const showAllUnplayedSongsInRoom = (roomId, callback) => {
       callback(null, results);
     }
   });
-}  
+}
 
 const addRoom = (roomName, userSpotifyId, callback) => {
   connection.query('INSERT INTO rooms (name, user_id) VALUES (?, (SELECT id FROM users WHERE spotify_id = ?))', [roomName, userSpotifyId], (err, results, fields) => {
@@ -256,4 +258,3 @@ module.exports = {
   getSongInRoom,
   showAllUnplayedSongsInRoom
 };
-
