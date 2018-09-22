@@ -16,15 +16,18 @@ const cors = require('cors');
 
 const db = require('../database/index');
 const app = express();
+const { incrementUserCount, decrementUserCount, decrementSkipVoteCount } = require('../helpers');
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24, //Set for one day
-  }
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 //Set for one day
+    }
+  })
+);
 
 app.use(cors());
 
@@ -32,10 +35,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
 
 app.use(express.static(__dirname + '/../client/dist'));
-
 
 app.use('/api', apiRoutes);
 app.use('/auth', authRoutes);
@@ -48,15 +54,16 @@ app.get('/*', (req, res) => {
 
 const port = process.env.PORT || 3000;
 
-// SOCKET WOOHOO
 const server = app.listen(port, () => {
   console.log(`App listening on port ${port}`);
 });
 
 const io = require('socket.io')(server);
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log('WOOHOO', socket.id);
+  incrementUserCount();
+  io.sockets.emit('updateSkipSongStats');
 
   // Set up event listeners
   socket.on('addSong', () => {
@@ -66,6 +73,18 @@ io.on('connection', (socket) => {
   socket.on('songVote', () => {
     io.sockets.emit('songWasVoted');
   });
+
+  socket.on('skipVote', () => {
+    io.sockets.emit('updateSkipSongStats');
+  });
+
+  socket.on('showSkipBtn', () => {
+    io.sockets.emit('renderSkipBtn');
+  });
+
+  socket.on('disconnect', () => {
+    decrementUserCount();
+    decrementSkipVoteCount();
+    io.sockets.emit('updateSkipSongStats');
+  });
 });
-    
-    

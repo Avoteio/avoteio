@@ -39,8 +39,8 @@ CREATE TABLE `users` (
 	`id` INT NOT NULL AUTO_INCREMENT,
 	`spotify_id` varchar(250) NULL DEFAULT NULL,
 	`spotify_display_name` varchar(250) NULL DEFAULT NULL,
-	`access_token` varchar(250) NULL DEFAULT NULL,
-	`refresh_token` varchar(250) NULL DEFAULT NULL,
+	`access_token` varchar(1000) NULL DEFAULT NULL,
+	`refresh_token` varchar(1000) NULL DEFAULT NULL,
 	`token_expires_at` DATETIME NULL DEFAULT NULL,
 	PRIMARY KEY (`id`)
 );
