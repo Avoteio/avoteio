@@ -151,15 +151,21 @@ router.get('/currentSong', async (req, res) => {
   try {
     const { data } = await axios(options);
     if (typeof data === 'object') {
+      // console.log('all song data');
+      // console.log(data);
       let songObj = {
         timeUntilNextSong: data.item.duration_ms - data.progress_ms,
         isPlaying: data.is_playing,
         songData: {
           title: data.item.name,
           artist: data.item.artists[0].name,
-          image: data.item.album.images[1].url
+          image: data.item.album.images[1].url,
+          duration_ms: data.item.duration_ms,
+          progress_ms: data.progress_ms
         }
       };
+      console.log('songobj');
+      console.log(songObj);
 
       const removeParens = (songName, songNoParens = [], skip = false) => {
         Array.from(songName).forEach(element => {

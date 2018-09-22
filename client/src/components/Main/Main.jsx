@@ -13,7 +13,10 @@ class Main extends Component {
     this.state = {
       songBank: [],
       currentSong: null,
-      currentLyrics: 'I am lyric',
+      currentLyrics: {
+        lyrics: 'I am lyridd\n \n \n \n \n \n \n \n c',
+        length: 0
+      },
       roomID: null,
       roomHostId: null,
       roomName: '',
@@ -63,7 +66,8 @@ class Main extends Component {
     localStorage.clear();
     // Go get the current userId (null if not signed in) and roomId from the server
     const { roomId } = this.props.match.params;
-    axios.post(`/api/rooms/${roomId}`)
+    axios
+      .post(`/api/rooms/${roomId}`)
       .then(({ data }) => {
         this.setState({
           roomID: roomId,
@@ -102,8 +106,12 @@ class Main extends Component {
         .catch(err => {
           console.log(err);
         });
-    } else { // have already voted on song
-      if (JSON.parse(localStorage.getItem('spotify_ids'))[song.spotify_id] !== voteDirection) {
+    } else {
+      // have already voted on song
+      if (
+        JSON.parse(localStorage.getItem('spotify_ids'))[song.spotify_id] !==
+        voteDirection
+      ) {
         axios
           .post('/api/changeUserVote', {
             song,
@@ -124,14 +132,19 @@ class Main extends Component {
 
   async getHostId() {
     // Get the host of the room that you just entered (so all users in the room can use their access token)
-    const { data: { roomHostId } } = await axios.get('/spotify/roomHost');
-    this.setState({
-      roomHostId
-    }, () => {
-      if (this.state.userId === this.state.roomHostId) {
-        this.setState({ showBSBBtn: true });
+    const {
+      data: { roomHostId }
+    } = await axios.get('/spotify/roomHost');
+    this.setState(
+      {
+        roomHostId
+      },
+      () => {
+        if (this.state.userId === this.state.roomHostId) {
+          this.setState({ showBSBBtn: true });
+        }
       }
-    });
+    );
   }
 
   pollCurrentSong() {
@@ -146,21 +159,32 @@ class Main extends Component {
     // Ask Spotify for the host's currently playing song
 
     // 👇🏼 Should really be inside a try...catch block for legit error handling
-    const { data: { songData } } = await axios.get('/spotify/currentSong');
+    const {
+      data: { songData }
+    } = await axios.get('/spotify/currentSong');
+    console.log('here is all the song data I have: ');
+    console.log(songData);
+
     this.setState({
       currentSong: songData,
-      currentLyrics: songData.lyrics
+      currentLyrics: {
+        lyrics: songData.lyrics,
+        length: songData.duration_ms,
+        progress: songData.progress_ms
+      }
     });
   }
 
   clickBSBmode() {
-    axios.get('/api/toggleBSBmode')
+    axios
+      .get('/api/toggleBSBmode')
       .then(() => {
-        axios.get('/spotify/search', {
-          params: {
-            q: 'backstreet boys'
-          }
-        })
+        axios
+          .get('/spotify/search', {
+            params: {
+              q: 'backstreet boys'
+            }
+          })
           .then(({ data: { items } }) => {
             items.forEach(songObj => {
               this.addSong(songObj);
@@ -169,16 +193,18 @@ class Main extends Component {
           })
           .then(items => {
             items.forEach(songObjj => {
-              axios.post('/api/upvoteBSBSong', { song: songObjj })
+              axios
+                .post('/api/upvoteBSBSong', { song: songObjj })
                 .catch(console.log);
-            })
+            });
           })
           .then(() => {
-            axios.get('/api/getAllSongs', {
-              params: {
-                roomID: this.state.roomID
-              }
-            })
+            axios
+              .get('/api/getAllSongs', {
+                params: {
+                  roomID: this.state.roomID
+                }
+              })
               .then(({ data }) => {
                 this.setState({
                   songBank: data
@@ -195,21 +221,21 @@ class Main extends Component {
       .catch(console.log);
   }
 
-
-
   addSong(song) {
     // Add a song to the current room and emit an addSong event to the server
-    axios.post('/api/saveSong', { song })
+    axios
+      .post('/api/saveSong', { song })
       .then(() => {
         this.socket.emit('addSong');
       })
-      .catch(function (error) {
-        console.log('POST failed', error)
+      .catch(function(error) {
+        console.log('POST failed', error);
       });
   }
 
   skipSong() {
-    axios.post('/api/skipsong')
+    axios
+      .post('/api/skipsong')
       .then(() => {
         this.socket.emit('skipVote');
         this.setState({ showSkipBtn: false });
@@ -218,12 +244,16 @@ class Main extends Component {
   }
 
   getSkipVoteCount() {
-    axios.get('/api/skipsong')
+    axios
+      .get('/api/skipsong')
       .then(({ data }) => {
-        this.setState({ skipVoteCount: data })
+        this.setState({ skipVoteCount: data });
       })
       .then(() => {
-        if (this.state.skipVoteCount > 75 && this.state.userId === this.state.roomHostId) {
+        if (
+          this.state.skipVoteCount > 75 &&
+          this.state.userId === this.state.roomHostId
+        ) {
           clearTimeout(this.setPlayNextSong);
           this.playNextSong();
         }
@@ -233,17 +263,18 @@ class Main extends Component {
 
   getAllSongs() {
     // Get all unplayed songs for the current room
-    axios.get('/api/getAllSongs', {
-      params: {
-        roomID: this.state.roomID
-      }
-    })
+    axios
+      .get('/api/getAllSongs', {
+        params: {
+          roomID: this.state.roomID
+        }
+      })
       .then(({ data }) => {
         this.setState({
           songBank: data
         });
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
       });
   }
@@ -287,9 +318,10 @@ class Main extends Component {
 
     // Once Spotify successfully plays the song, mark the song as played in the db
     // 👇🏼 Shitty mix of asyn/await & promises (some desperate debugging caused this)
-    await axios.post('/api/markSongPlayed', {
-      songObj: song
-    })
+    await axios
+      .post('/api/markSongPlayed', {
+        songObj: song
+      })
       .then(() => {
         this.getAllSongs();
         if (this.state.userId === this.state.roomHostId) {
@@ -308,13 +340,16 @@ class Main extends Component {
   }
 
   render() {
-    let currentSong = this.state.currentSong ?
+    let currentSong = this.state.currentSong ? (
       <CurrentSong
         song={this.state.currentSong}
         skipVoteCount={this.state.skipVoteCount}
         skipSong={this.skipSong}
         showSkipBtn={this.state.showSkipBtn}
-      /> : "";
+      />
+    ) : (
+      ''
+    );
 
     return (
       <div className="main">
@@ -333,7 +368,10 @@ class Main extends Component {
             addSong={this.addSong}
           />
           <LyricList currentLyrics={this.state.currentLyrics} />
-          <Modes showBSBBtn={this.state.showBSBBtn} clickBSBmode={this.clickBSBmode} />
+          <Modes
+            showBSBBtn={this.state.showBSBBtn}
+            clickBSBmode={this.clickBSBmode}
+          />
         </div>
       </div>
     );
